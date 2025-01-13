@@ -367,27 +367,24 @@ def oversample_minority_class_in_training_data(train_data, images_path):
             # Load the image using OpenCV
             img = cv2.imread(os.path.join(images_path, img_name))  # Load the image
             # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert from BGR to RGB format
-            
-            # Define a list of independent augmentation techniques
-            augmentations = [
-                A.RandomRotate90(p=1.0),             # Apply 90-degree random rotation
-                A.Flip(p=1.0),                       # Random flip (horizontal/vertical)
-                A.RandomBrightnessContrast(p=1.0),    # Randomly change brightness and contrast
-                A.GaussianBlur(p=1.0),               # Apply Gaussian blur
-                A.HueSaturationValue(p=1.0),         # Randomly change hue, saturation, and value
+
+            # Define the augmentation pipeline (applying multiple augmentations at once)
+            augmentations = A.Compose([
+                A.RandomRotate90(p=0.5),             # Apply 90-degree random rotation
+                A.Flip(p=0.5),                       # Random flip (horizontal/vertical)
+                A.RandomBrightnessContrast(p=0.5),    # Randomly change brightness and contrast
+                A.GaussianBlur(p=0.3),               # Apply Gaussian blur
+                A.HueSaturationValue(p=0.5),         # Randomly change hue, saturation, and value
                 A.CLAHE(p=0.5),                      # Apply Contrast Limited Adaptive Histogram Equalization
-            ]
+            ])
 
             # Apply augmentations until the number of malignant images matches the benign images
             for i in range(n_augs):
                 if n_malignant == n_benign:  # Stop when the dataset is balanced
                     break
                 
-                # Randomly select an augmentation from the list
-                transform = random.choice(augmentations)
-                
-                # Apply the selected augmentation to the image
-                augmented = transform(image=img)
+                # Apply the augmentation pipeline to the image
+                augmented = augmentations(image=img)
                 aug_image = augmented['image']
                 
                 # Save the augmented image to the directory
