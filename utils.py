@@ -370,10 +370,12 @@ def oversample_minority_class_in_training_data(train_data, images_path):
             
             # Define a list of independent augmentation techniques
             augmentations = [
-                A.RandomRotate90(p=0.5),          # Randomly rotate the image by 90 degrees
-                A.Flip(p=0.5),                    # Random horizontal/vertical flip
-                A.RandomBrightnessContrast(p=0.3), # Adjust brightness and contrast
-                A.GaussianBlur(p=0.5)             # Apply Gaussian blur
+                A.RandomRotate90(p=1.0),             # Apply 90-degree random rotation
+                A.Flip(p=1.0),                       # Random flip (horizontal/vertical)
+                A.RandomBrightnessContrast(p=1.0),    # Randomly change brightness and contrast
+                A.GaussianBlur(p=1.0),               # Apply Gaussian blur
+                A.HueSaturationValue(p=1.0),         # Randomly change hue, saturation, and value
+                A.CLAHE(p=0.5),                      # Apply Contrast Limited Adaptive Histogram Equalization
             ]
 
             # Apply augmentations until the number of malignant images matches the benign images
