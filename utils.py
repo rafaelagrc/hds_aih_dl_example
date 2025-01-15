@@ -228,7 +228,7 @@ def initialize_model(model, optimizer, loss):
 
 
 # Function to train a model
-def train_model(model, train_gen, val_gen, num_epochs):
+def train_model(model, train_gen, val_gen, num_epochs, callbacks=None):
     """
     Trains the given model using the training and validation data generators.
 
@@ -245,7 +245,8 @@ def train_model(model, train_gen, val_gen, num_epochs):
     history = model.fit(
         train_gen,                 # Generator for training data
         validation_data=val_gen,   # Generator for validation data
-        epochs=num_epochs          # Number of training epochs
+        epochs=num_epochs,         # Number of training epochs
+        callbacks=callbacks,
     )
 
     # Plot the training and validation loss over epochs
@@ -342,10 +343,9 @@ def visualize_predictions(test_gen, model, num_images=5):
 def oversample_minority_class_in_training_data(train_data, images_path):
     # Calculate the number of augmentations needed for each minority image
     # To balance the dataset (number of benign = number of malignant)
-    # n_augs = int(np.ceil(len(train_data[train_data['class'] == 0]) / 
-    #                      len(train_data[train_data['class'] == 1])))
+    n_augs = int(np.ceil((len(train_data[train_data['class'] == 0]) - len(train_data[train_data['class'] == 1])) / len(train_data[train_data['class'] == 1])))
+    n_augs = min(n_augs, 2)  # Cap augmentations at 2 per image
 
-    n_augs = 2
 
     # Extract image paths, benign/malignant labels, and class labels from the training data
     X_train = np.array([file for file in train_data['ISIC_0000000']])  # List of image paths
@@ -378,7 +378,6 @@ def oversample_minority_class_in_training_data(train_data, images_path):
                 A.HueSaturationValue(p=0.2),           # Modify hue, saturation, and value
                 A.CLAHE(p=0.2),                        # Apply adaptive histogram equalization
                 A.Rotate(limit=30, p=0.2),             # Rotate within a limit of 30 degrees
-                A.ElasticTransform(alpha=0.5, p=0.2),  # Elastic deformation (lower intensity)
                 A.GridDistortion(p=0.2),               # Apply grid distortion
                 A.GaussianBlur(p=0.2)                  # Blur to simulate low-quality images
             ])
