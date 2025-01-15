@@ -342,8 +342,10 @@ def visualize_predictions(test_gen, model, num_images=5):
 def oversample_minority_class_in_training_data(train_data, images_path):
     # Calculate the number of augmentations needed for each minority image
     # To balance the dataset (number of benign = number of malignant)
-    n_augs = int(np.ceil(len(train_data[train_data['class'] == 0]) / 
-                         len(train_data[train_data['class'] == 1])))
+    # n_augs = int(np.ceil(len(train_data[train_data['class'] == 0]) / 
+    #                      len(train_data[train_data['class'] == 1])))
+
+    n_augs = 2
 
     # Extract image paths, benign/malignant labels, and class labels from the training data
     X_train = np.array([file for file in train_data['ISIC_0000000']])  # List of image paths
@@ -370,13 +372,17 @@ def oversample_minority_class_in_training_data(train_data, images_path):
 
             # Define the augmentation pipeline (applying multiple augmentations at once)
             augmentations = A.Compose([
-                A.RandomRotate90(p=0.5),             # Apply 90-degree random rotation
-                A.Flip(p=0.5),                       # Random flip (horizontal/vertical)
-                A.RandomBrightnessContrast(p=0.5),    # Randomly change brightness and contrast
-                A.GaussianBlur(p=0.3),               # Apply Gaussian blur
-                A.HueSaturationValue(p=0.5),         # Randomly change hue, saturation, and value
-                A.CLAHE(p=0.5),                      # Apply Contrast Limited Adaptive Histogram Equalization
+                A.RandomRotate90(p=0.3),               # Random 90-degree rotation
+                A.Flip(p=0.4),                         # Random horizontal/vertical flip
+                A.RandomBrightnessContrast(p=0.3),     # Adjust brightness and contrast
+                A.HueSaturationValue(p=0.2),           # Modify hue, saturation, and value
+                A.CLAHE(p=0.2),                        # Apply adaptive histogram equalization
+                A.Rotate(limit=30, p=0.2),             # Rotate within a limit of 30 degrees
+                A.ElasticTransform(alpha=0.5, p=0.2),  # Elastic deformation (lower intensity)
+                A.GridDistortion(p=0.2),               # Apply grid distortion
+                A.GaussianBlur(p=0.2)                  # Blur to simulate low-quality images
             ])
+
 
             # Apply augmentations until the number of malignant images matches the benign images
             for i in range(n_augs):
